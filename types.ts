@@ -44,6 +44,14 @@ export interface User {
   xpToday: number;
   dailyGoal: number;
   streakStatus: ('active' | 'completed' | 'missed' | 'frozen')[]; // Last 7 days status
+  authDetails?: AuthUser;
+}
+
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  token?: string;
 }
 
 export interface AppNotification {

@@ -8,8 +8,9 @@ import CourseDetail from './pages/CourseDetail';
 import ChatTutor from './pages/ChatTutor';
 import Settings from './pages/Settings';
 import Search from './pages/Search';
+import Auth from './pages/Auth';
 import NotificationPanel from './components/NotificationPanel';
-import { Course, Tab, User, Language, AppNotification } from './types';
+import { Course, Tab, User, Language, AppNotification, AuthUser } from './types';
 
 // Mock Data
 const MOCK_USER: User = {
@@ -208,6 +209,7 @@ const TRANSLATIONS = {
 };
 
 const App: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(true); // Set to true by default as per request #2
   const [currentTab, setCurrentTab] = useState<Tab>('home');
   const [courses, setCourses] = useState<Course[]>(MOCK_COURSES);
   const [activeCourse, setActiveCourse] = useState<Course | null>(null);
@@ -224,6 +226,22 @@ const App: React.FC = () => {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
 
   const t = (TRANSLATIONS as any)[language];
+
+  const handleLogin = (authUser: AuthUser) => {
+    setUser(prev => ({
+      ...prev,
+      name: authUser.name,
+      authDetails: authUser
+    }));
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setUser(MOCK_USER);
+    setCurrentTab('home');
+    setActiveCourse(null);
+  };
 
   const toggleDarkMode = () => {
     setIsDarkMode(prev => {
@@ -260,6 +278,17 @@ const App: React.FC = () => {
     if (activeCourse?.id === updatedCourse.id) setActiveCourse(updatedCourse);
   };
 
+  if (!isAuthenticated) {
+    return (
+      <Auth 
+        onLogin={handleLogin} 
+        onToggleLanguage={() => setLanguage(l => l === 'vi' ? 'en' : 'vi')} 
+        language={language} 
+        t={t} 
+      />
+    );
+  }
+
   return (
     <div className={`h-screen w-full bg-gray-50 dark:bg-gray-900 flex transition-colors duration-200 overflow-hidden ${isDarkMode ? 'dark' : ''}`}>
       {/* Ẩn Sidebar khi đang xem chi tiết khóa học */}
@@ -273,7 +302,7 @@ const App: React.FC = () => {
           onToggleDarkMode={toggleDarkMode} 
           language={language} 
           onToggleLanguage={() => setLanguage(l => l === 'vi' ? 'en' : 'vi')} 
-          onLogout={() => {}} 
+          onLogout={handleLogout} 
         />
       )}
       
@@ -302,7 +331,7 @@ const App: React.FC = () => {
                 {currentTab === 'search' && <Search courses={courses} onCourseClick={setActiveCourse} t={t.search} language={language} />}
                 {currentTab === 'create' && <CourseGenerator onCourseGenerated={handleCourseGenerated} t={t.generator} language={language} courses={courses} onCourseClick={setActiveCourse} initialData={courseToEdit} onCancel={() => setCourseToEdit(null)} />}
                 {currentTab === 'chat' && <ChatTutor t={t.chat} language={language} />}
-                {currentTab === 'settings' && <Settings user={user} onUpdateUser={setUser} isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} language={language} onToggleLanguage={() => setLanguage(l => l === 'vi' ? 'en' : 'vi')} onLogout={() => {}} t={t.settings} />}
+                {currentTab === 'settings' && <Settings user={user} onUpdateUser={setUser} isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} language={language} onToggleLanguage={() => setLanguage(l => l === 'vi' ? 'en' : 'vi')} onLogout={handleLogout} t={t.settings} />}
                 </>
             )}
         </div>

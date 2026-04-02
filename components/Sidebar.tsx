@@ -37,8 +37,13 @@ const Sidebar: React.FC<SidebarProps> = ({
     <div className="hidden md:flex flex-col w-64 h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-colors duration-200">
       {/* Logo Area */}
       <div className="p-6 flex items-center space-x-3">
-        <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200 dark:shadow-none">
-            <span className="text-xl font-bold text-white">N</span>
+        <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200 dark:shadow-none overflow-hidden">
+            <img 
+              src="https://cdn-icons-png.flaticon.com/512/2641/2641333.png" 
+              alt="Logo" 
+              className="w-7 h-7 object-contain brightness-0 invert"
+              referrerPolicy="no-referrer"
+            />
         </div>
         <span className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">NeuroLearn</span>
       </div>

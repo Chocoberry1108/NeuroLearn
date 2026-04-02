@@ -1,4 +1,4 @@
-# 🧠 NeuroLearn AI - Hệ Sinh Thái Học Tập Thích Ứng Cá Nhân Hóa
+# 🧠 NeuroLearn - Hệ Sinh Thái Học Tập Thích Ứng Cá Nhân Hóa
 
 ![NeuroLearn AI Banner](https://i.ytimg.com/vi/bQq9UFUfrRA/maxresdefault.jpg)
 
@@ -66,4 +66,4 @@ Các tệp tin tĩnh sẽ được tạo trong thư mục `dist/`. Bạn có th�
 Dự án được phát triển cho mục đích giáo dục và tham gia cuộc thi Sáng tạo.
 
 ---
-*Phát triển bởi Đội ngũ NeuroLearn AI 🚀*
+

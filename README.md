@@ -63,7 +63,7 @@ Các tệp tin tĩnh sẽ được tạo trong thư mục `dist/`. Bạn có th�
 ---
 
 ## 📝 Giấy Phép
-Dự án được phát triển cho mục đích giáo dục và tham gia cuộc thi Sáng tạo.
+Dự án được phát triển cho mục đích giáo dục và tham gia cuộc thi Tin học trẻ.
 
 ---
 

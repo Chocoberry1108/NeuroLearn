@@ -25,9 +25,11 @@ const Home: React.FC<HomeProps> = ({ user, courses, onCourseClick, t, language, 
     <div className="pb-24 pt-14 md:pt-8 px-5 md:px-8">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">{t.hello}, {user.name} 👋</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{t.ready}</p>
+        <div className="flex items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">{t.hello}, {user.name} 👋</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t.ready}</p>
+          </div>
         </div>
         <div className="flex items-center space-x-3">
             <button 
@@ -44,29 +46,8 @@ const Home: React.FC<HomeProps> = ({ user, courses, onCourseClick, t, language, 
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="lg:col-span-2">
-            <StreakTracker user={user} t={t} language={language} />
-        </div>
-        {/* Simple Deadline Widget */}
-        <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-6 text-white shadow-xl flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-white/20 rounded-xl">
-                    <Calendar size={20} />
-                </div>
-                <span className="text-[10px] font-bold uppercase tracking-widest opacity-70">{deadlineLabel}</span>
-            </div>
-            <div>
-                <h3 className="text-lg font-bold mb-1">UI Design: Tools</h3>
-                <div className="flex items-center space-x-2 text-xs opacity-80">
-                    <Clock size={12} />
-                    <span>Hết hạn trong 2 giờ nữa</span>
-                </div>
-            </div>
-            <button className="mt-6 w-full py-3 bg-white text-indigo-600 rounded-xl text-sm font-bold shadow-sm hover:bg-gray-50 transition-colors">
-                {language === 'vi' ? 'Học ngay' : 'Learn Now'}
-            </button>
-        </div>
+      <div className="mb-8">
+        <StreakTracker user={user} t={t} language={language} />
       </div>
 
       {/* Ongoing */}

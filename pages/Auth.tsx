@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Mail, Lock, User as UserIcon, ArrowRight, Globe, Loader2 } from 'lucide-react';
 import { Language, AuthUser } from '../types';
+import { signInWithGoogle } from '../firebase';
 
 interface AuthProps {
   onLogin: (user: AuthUser) => void;
@@ -28,7 +29,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin, onToggleLanguage, language, t }) =
     setIsLoading(true);
     setError(null);
 
-    // Simulate API call
+    // Simulate API call for email/password (since we only set up Google Auth)
     setTimeout(() => {
       const mockAuthUser: AuthUser = {
         id: Math.random().toString(36).substr(2, 9),
@@ -41,18 +42,23 @@ const Auth: React.FC<AuthProps> = ({ onLogin, onToggleLanguage, language, t }) =
     }, 1500);
   };
 
-  const handleGoogleLogin = () => {
+  const handleGoogleLogin = async () => {
     setIsLoading(true);
-    setTimeout(() => {
-      const mockAuthUser: AuthUser = {
-        id: 'google-123',
-        name: 'Alex Google',
-        email: 'alex@gmail.com',
-        token: 'google-mock-token'
+    setError(null);
+    try {
+      const user = await signInWithGoogle();
+      const authUser: AuthUser = {
+        id: user.uid,
+        name: user.displayName || 'User',
+        email: user.email || '',
+        token: await user.getIdToken()
       };
-      onLogin(mockAuthUser);
+      onLogin(authUser);
+    } catch (err: any) {
+      setError(err.message || 'Failed to sign in with Google');
+    } finally {
       setIsLoading(false);
-    }, 1200);
+    }
   };
 
   return (

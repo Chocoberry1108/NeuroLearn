@@ -1,0 +1,77 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and settings",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "name": { "type": "string" },
+        "avatar": { "type": "string" },
+        "streak": { "type": "number" },
+        "points": { "type": "number" },
+        "xpToday": { "type": "number" },
+        "dailyGoal": { "type": "number" },
+        "streakStatus": { "type": "array", "items": { "type": "string" } },
+        "isDarkMode": { "type": "boolean" },
+        "language": { "type": "string" }
+      },
+      "required": ["uid", "name"]
+    },
+    "Course": {
+      "title": "Course",
+      "description": "A course generated or added by the user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "thumbnail": { "type": "string" },
+        "author": { "type": "string" },
+        "category": { "type": "string" },
+        "rating": { "type": "number" },
+        "students": { "type": "number" },
+        "modules": { "type": "array" },
+        "progress": { "type": "number" },
+        "status": { "type": "string" },
+        "visibility": { "type": "string" },
+        "isCreatedByUser": { "type": "boolean" },
+        "isGenerated": { "type": "boolean" }
+      },
+      "required": ["id", "title"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "App notification for the user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "read": { "type": "boolean" },
+        "type": { "type": "string" },
+        "courseId": { "type": "string" }
+      },
+      "required": ["id", "title", "message", "timestamp", "read", "type"]
+    }
+  },
+  "firestore": {
+    "/publicCourses/{courseId}": {
+      "schema": { "$ref": "#/entities/Course" },
+      "description": "Publicly available courses"
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles"
+    },
+    "/users/{userId}/courses/{courseId}": {
+      "schema": { "$ref": "#/entities/Course" },
+      "description": "User's courses"
+    },
+    "/users/{userId}/notifications/{notificationId}": {
+      "schema": { "$ref": "#/entities/Notification" },
+      "description": "User's notifications"
+    }
+  }
+}

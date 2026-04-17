@@ -1,0 +1,87 @@
+{
+  "user": {
+    "name": "Alex",
+    "avatar": "https://ui-avatars.com/api/?name=Alex",
+    "streak": 12,
+    "points": 450,
+    "xpToday": 35,
+    "dailyGoal": 50,
+    "streakStatus": ["completed", "completed", "frozen", "active", "missed", "missed", "missed"]
+  },
+  "courses": [
+    {
+      "id": "1",
+      "title": "Cơ bản về Thiết kế UI",
+      "description": "Học các kiến thức cơ bản về thiết kế Giao diện Người dùng bao gồm lý thuyết màu sắc, kiểu chữ và bố cục.",
+      "thumbnail": "https://picsum.photos/seed/design/400/300",
+      "author": "Sarah Design",
+      "category": "Thiết kế",
+      "rating": 4.8,
+      "students": 1205,
+      "modules": [
+        {
+          "id": "m1",
+          "title": "Giới thiệu",
+          "lessons": [
+            {
+              "id": "l1",
+              "title": "UI là gì?",
+              "description": "Kiến thức cơ bản",
+              "duration": "5 phút",
+              "isCompleted": true,
+              "userRating": 5
+            },
+            {
+              "id": "l2",
+              "title": "Công cụ hành nghề",
+              "description": "Figma và những thứ khác",
+              "duration": "10 phút",
+              "isCompleted": false
+            }
+          ]
+        }
+      ],
+      "progress": 45,
+      "status": "published",
+      "visibility": "public",
+      "isCreatedByUser": false
+    },
+    {
+      "id": "2",
+      "title": "React.js từ Số 0 đến Chuyên gia",
+      "description": "Làm chủ React.js bằng cách xây dựng các dự án thực tế.",
+      "thumbnail": "https://picsum.photos/seed/react/400/300",
+      "author": "Code Master",
+      "category": "Lập trình",
+      "rating": 4.9,
+      "students": 8500,
+      "modules": [],
+      "progress": 10,
+      "status": "published",
+      "visibility": "public",
+      "isCreatedByUser": false
+    }
+  ],
+  "notifications": [
+    {
+      "id": "1",
+      "title": "Hạn chót sắp tới!",
+      "message": "Bài học \"Công cụ hành nghề\" trong khóa UI Design sẽ hết hạn trong 2 giờ.",
+      "timestamp": "2026-04-07T04:00:00.000Z",
+      "read": false,
+      "type": "deadline"
+    },
+    {
+      "id": "2",
+      "title": "Thành tích mới!",
+      "message": "Bạn đã đạt được chuỗi 12 ngày học tập liên tục. Tuyệt vời!",
+      "timestamp": "2026-04-07T03:00:00.000Z",
+      "read": true,
+      "type": "achievement"
+    }
+  ],
+  "settings": {
+    "isDarkMode": false,
+    "language": "vi"
+  }
+}

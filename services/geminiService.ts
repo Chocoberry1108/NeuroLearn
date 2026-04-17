@@ -24,7 +24,29 @@ const COURSE_SCHEMA = {
                 title: { type: Type.STRING },
                 description: { type: Type.STRING },
                 duration: { type: Type.STRING },
-                content: { type: Type.STRING, description: "Detailed educational content for the lesson in Markdown format." }
+                content: { type: Type.STRING, description: "Detailed educational content for the lesson in Markdown format." },
+                youtubeVideos: {
+                  type: Type.ARRAY,
+                  description: "A list of 1-2 highly relevant YouTube videos found via search.",
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      title: { type: Type.STRING },
+                      videoId: { type: Type.STRING, description: "The YouTube Video ID (e.g., dQw4w9WgXcQ)" }
+                    }
+                  }
+                },
+                images: {
+                  type: Type.ARRAY,
+                  description: "A list of 3-4 relevant educational image URLs found via search.",
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      title: { type: Type.STRING },
+                      url: { type: Type.STRING, description: "Direct publicly accessible URL to a high-quality relevant image." }
+                    }
+                  }
+                }
               }
             }
           }
@@ -76,6 +98,16 @@ const FILE_LESSON_SCHEMA = {
           videoId: { type: Type.STRING }
         }
       }
+    },
+    images: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING },
+          url: { type: Type.STRING }
+        }
+      }
     }
   }
 };
@@ -121,7 +153,9 @@ export const generateCourseStructure = async (
             The content MUST be in ${langPrompt} language.
             Include 3 modules, each with 2 lessons.
             For each lesson, generate detailed educational content in Markdown format (at least 200 words). 
-            Use clear headings (## and ###), bullet points, and bold text for key concepts to make it highly readable.`
+            Use clear headings (## and ###), bullet points, and bold text for key concepts to make it highly readable.
+            USE GOOGLE SEARCH to find 1-2 relevant YouTube videos and 2-3 relevant educational images for EACH lesson.
+            EMBED the images DIRECTLY into the Markdown content using syntax \`![Alt Text](URL)\`.`
         });
     } else {
         parts.push({
@@ -129,7 +163,9 @@ export const generateCourseStructure = async (
             The content MUST be in ${langPrompt} language.
             Include 3 modules, each with 2 lessons.
             For each lesson, generate detailed educational content in Markdown format (at least 200 words).
-            Use clear headings (## and ###), bullet points, and bold text for key concepts to make it highly readable.`
+            Use clear headings (## and ###), bullet points, and bold text for key concepts to make it highly readable.
+            USE GOOGLE SEARCH to find 1-2 relevant YouTube videos and 2-3 relevant educational images for EACH lesson.
+            EMBED the images DIRECTLY into the Markdown content using syntax \`![Alt Text](URL)\`.`
         });
     }
 
@@ -137,6 +173,7 @@ export const generateCourseStructure = async (
       model: 'gemini-3-flash-preview',
       contents: parts.length === 1 ? parts[0].text : { parts },
       config: {
+        tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
         responseSchema: COURSE_SCHEMA,
       },
@@ -147,14 +184,46 @@ export const generateCourseStructure = async (
     const modules: Module[] = data.modules?.map((mod: any, mIdx: number) => ({
       id: `m-${Date.now()}-${mIdx}`,
       title: mod.title,
-      lessons: mod.lessons?.map((les: any, lIdx: number) => ({
-        id: `l-${Date.now()}-${mIdx}-${lIdx}`,
-        title: les.title,
-        description: les.description,
-        duration: les.duration || "5 min",
-        content: (les.content || "").replace(/\\n/g, '\n'),
-        isCompleted: false,
-      })) || []
+      lessons: mod.lessons?.map((les: any, lIdx: number) => {
+        let content = (les.content || "").replace(/\\n/g, '\n');
+        const images = les.images || [];
+        const videos = les.youtubeVideos || [];
+        
+        if (images.length > 0) {
+          const contentParts = content.split('\n\n');
+          let imgIndex = 0;
+          let newContentParts = [];
+          let imagesEmbeddedCount = (content.match(/!\[.*?\]\(.*?\)/g) || []).length;
+
+          const shouldInjectMore = imagesEmbeddedCount < images.length;
+
+          if (shouldInjectMore) {
+            for (let i = 0; i < contentParts.length; i++) {
+                newContentParts.push(contentParts[i]);
+                const isHeading = contentParts[i].trim().startsWith('#');
+                if (imgIndex < images.length && i < contentParts.length - 1) {
+                    const partHasImage = /!\[.*?\]\(.*?\)/.test(contentParts[i]);
+                    if (!partHasImage && (isHeading || (i > 2 && i % 4 === 0))) {
+                        newContentParts.push(`![${images[imgIndex].title}](${images[imgIndex].url})`);
+                        imgIndex++;
+                    }
+                }
+            }
+            content = newContentParts.join('\n\n');
+          }
+        }
+
+        return {
+          id: `l-${Date.now()}-${mIdx}-${lIdx}`,
+          title: les.title,
+          description: les.description,
+          duration: les.duration || "5 min",
+          content: content,
+          images: images,
+          videos: videos,
+          isCompleted: false,
+        };
+      }) || []
     })) || [];
 
     return {
@@ -283,7 +352,7 @@ export const generateLessonFromFile = async (
   lessonTitle: string,
   language: Language,
   fileData: { mimeType: string, data: string }
-): Promise<{ content: string; videos: { title: string; videoId: string }[] }> => {
+): Promise<{ content: string; videos: { title: string; videoId: string }[]; images: { title: string; url: string }[] }> => {
   const langPrompt = language === 'vi' ? 'Vietnamese' : 'English';
   try {
      const response = await ai.models.generateContent({
@@ -306,23 +375,54 @@ export const generateLessonFromFile = async (
                 - Structure it with clear headings, bullet points, and paragraphs.
                 - Ensure it is comprehensive, easy to learn, and well-formatted.
                 - Do NOT just summarize; teach the material found in the document.
-                - If applicable, suggest 1-2 youtube video titles that would be helpful.`
+                - USE GOOGLE SEARCH to find 1-2 relevant YouTube videos and 2-3 relevant educational images.
+                - EMBED the images DIRECTLY into the Markdown content using syntax \`![Alt Text](URL)\`.`
             }
         ]
       },
       config: {
+        tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
         responseSchema: FILE_LESSON_SCHEMA,
       }
     });
     const json = JSON.parse(response.text || "{}");
+    
+    let content = (json.markdownContent || "").replace(/\\n/g, '\n');
+    const images = json.images || [];
+    
+    if (images.length > 0) {
+      const contentParts = content.split('\n\n');
+      let imgIndex = 0;
+      let newContentParts = [];
+      let imagesEmbeddedCount = (content.match(/!\[.*?\]\(.*?\)/g) || []).length;
+
+      const shouldInjectMore = imagesEmbeddedCount < images.length;
+
+      if (shouldInjectMore) {
+        for (let i = 0; i < contentParts.length; i++) {
+            newContentParts.push(contentParts[i]);
+            const isHeading = contentParts[i].trim().startsWith('#');
+            if (imgIndex < images.length && i < contentParts.length - 1) {
+                const partHasImage = /!\[.*?\]\(.*?\)/.test(contentParts[i]);
+                if (!partHasImage && (isHeading || (i > 2 && i % 4 === 0))) {
+                    newContentParts.push(`![${images[imgIndex].title}](${images[imgIndex].url})`);
+                    imgIndex++;
+                }
+            }
+        }
+        content = newContentParts.join('\n\n');
+      }
+    }
+
     return {
-        content: (json.markdownContent || "").replace(/\\n/g, '\n'),
-        videos: json.youtubeVideos || []
+        content: content,
+        videos: json.youtubeVideos || [],
+        images: images
     };
   } catch (error) {
       console.error("Error generating lesson from file:", error);
-      return { content: "", videos: [] };
+      return { content: "", videos: [], images: [] };
   }
 }
 

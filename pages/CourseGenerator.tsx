@@ -15,12 +15,13 @@ interface CourseGeneratorProps {
   onCourseClick?: (course: Course) => void;
   initialData?: Course | null;
   onCancel?: () => void;
+  onDeleteCourse?: (id: string) => void;
 }
 
 type Mode = 'select' | 'ai' | 'manual' | 'upload';
 type ViewTab = 'create' | 'my-courses';
 
-const CourseGenerator: React.FC<CourseGeneratorProps> = ({ onCourseGenerated, t, language, courses = [], onCourseClick, initialData, onCancel }) => {
+const CourseGenerator: React.FC<CourseGeneratorProps> = ({ onCourseGenerated, t, language, courses = [], onCourseClick, initialData, onCancel, onDeleteCourse }) => {
   const [activeTab, setActiveTab] = useState<ViewTab>('create');
   const [mode, setMode] = useState<Mode>('select');
   const [topic, setTopic] = useState('');
@@ -36,6 +37,8 @@ const CourseGenerator: React.FC<CourseGeneratorProps> = ({ onCourseGenerated, t,
   const [manualDesc, setManualDesc] = useState('');
   const [manualCategory, setManualCategory] = useState('');
   const [manualThumbnail, setManualThumbnail] = useState<string | null>(null);
+  const [manualStatus, setManualStatus] = useState<'draft' | 'published'>('draft');
+  const [manualVisibility, setManualVisibility] = useState<'public' | 'private'>('private');
   const [manualModules, setManualModules] = useState<Module[]>([
     { id: `m-${Date.now()}`, title: '', lessons: [] }
   ]);
@@ -61,6 +64,8 @@ const CourseGenerator: React.FC<CourseGeneratorProps> = ({ onCourseGenerated, t,
         setManualDesc(initialData.description);
         setManualCategory(initialData.category);
         setManualThumbnail(initialData.thumbnail);
+        setManualStatus(initialData.status);
+        setManualVisibility(initialData.visibility);
         setManualModules(initialData.modules);
     } else {
         // Reset if initialData is cleared (e.g. going back to main menu manually)
@@ -171,7 +176,8 @@ const CourseGenerator: React.FC<CourseGeneratorProps> = ({ onCourseGenerated, t,
                             lessons: m.lessons.map(l => l.id === editingLessonId.lesId ? {
                                 ...l, 
                                 content: newContent,
-                                videos: [...(l.videos || []), ...(result.videos || [])] // Append new videos
+                                videos: [...(l.videos || []), ...(result.videos || [])], // Append new videos
+                                images: [...(l.images || []), ...(result.images || [])] // Append new images
                             } : l)
                         };
                     }
@@ -250,8 +256,8 @@ const CourseGenerator: React.FC<CourseGeneratorProps> = ({ onCourseGenerated, t,
           students: initialData ? initialData.students : 0,
           progress: initialData ? initialData.progress : 0,
           modules: manualModules,
-          status: initialData ? initialData.status : 'draft',
-          visibility: initialData ? initialData.visibility : 'private',
+          status: manualStatus,
+          visibility: manualVisibility,
           isCreatedByUser: true
       };
       onCourseGenerated(newCourse);
@@ -262,6 +268,8 @@ const CourseGenerator: React.FC<CourseGeneratorProps> = ({ onCourseGenerated, t,
       setManualDesc('');
       setManualCategory('');
       setManualThumbnail(null);
+      setManualStatus('draft');
+      setManualVisibility('private');
       setManualModules([{ id: `m-${Date.now()}`, title: '', lessons: [] }]);
       setEditingLessonId(null);
       setIsEditorPreviewMode(false);
@@ -736,6 +744,30 @@ const CourseGenerator: React.FC<CourseGeneratorProps> = ({ onCourseGenerated, t,
 
             <div className="grid grid-cols-2 gap-4">
                 <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Trạng thái (Status)</label>
+                    <select
+                        value={manualStatus}
+                        onChange={(e) => setManualStatus(e.target.value as 'draft' | 'published')}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 outline-none"
+                    >
+                        <option value="draft">Bản nháp</option>
+                        <option value="published">Đã xuất bản</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Chế độ (Visibility)</label>
+                    <select
+                        value={manualVisibility}
+                        onChange={(e) => setManualVisibility(e.target.value as 'public' | 'private')}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 outline-none"
+                    >
+                        <option value="private">Riêng tư</option>
+                        <option value="public">Công khai</option>
+                    </select>
+                </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4 mt-4">
+                <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t.category}</label>
                     <input
                         type="text"
@@ -892,6 +924,29 @@ const CourseGenerator: React.FC<CourseGeneratorProps> = ({ onCourseGenerated, t,
              >
                  {initialData ? t.updateManual : t.save}
              </button>
+             {initialData && onDeleteCourse && (
+                 <button 
+                     onClick={(e) => {
+                         const btn = e.currentTarget;
+                         if (btn.dataset.confirm === 'true') {
+                             onDeleteCourse(initialData.id);
+                         } else {
+                             btn.dataset.confirm = 'true';
+                             btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-alert-triangle"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span>Nhấn lần nữa để xác nhận xóa vĩnh viễn</span>';
+                             setTimeout(() => {
+                                 if (btn) {
+                                     btn.dataset.confirm = 'false';
+                                     btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg><span>Xóa toàn bộ khóa học</span>';
+                                 }
+                             }, 3000);
+                         }
+                     }}
+                     className="w-full py-4 mt-3 bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/20 dark:hover:bg-red-900/40 dark:text-red-400 rounded-xl font-bold shadow-sm transition-all flex items-center justify-center gap-2"
+                 >
+                     <Trash2 size={20} />
+                     <span>Xóa toàn bộ khóa học</span>
+                 </button>
+             )}
           </div>
       </div>
   );

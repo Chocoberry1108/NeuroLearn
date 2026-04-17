@@ -1,8 +1,8 @@
-# 🧠 NeuroLearn - Nền tảng học tập cả nhân hóa
+# 🧠 NeuroLearn AI - Hệ Sinh Thái Học Tập Thích Ứng Cá Nhân Hóa
 
 ![NeuroLearn AI Banner](https://i.ytimg.com/vi/bQq9UFUfrRA/maxresdefault.jpg)
 
-**NeuroLearn** là một nền tảng học tập đột phá được hỗ trợ bởi trí tuệ nhân tạo (AI), cho phép người dùng tự kiến tạo lộ trình tri thức của riêng mình. Thay vì học theo các giáo trình cố định, NeuroLearn AI biến mọi chủ đề hoặc tài liệu thô thành các khóa học sinh động, cá nhân hóa hoàn toàn cho từng cá nhân.
+**NeuroLearn AI** là một nền tảng học tập đột phá được hỗ trợ bởi trí tuệ nhân tạo (AI), cho phép người dùng tự kiến tạo lộ trình tri thức của riêng mình. Thay vì học theo các giáo trình cố định, NeuroLearn AI biến mọi chủ đề hoặc tài liệu thô thành các khóa học sinh động, cá nhân hóa hoàn toàn cho từng cá nhân.
 
 ---
 
@@ -25,9 +25,6 @@
 *   **Animations:** Framer Motion.
 
 ---
-## 🖼️ Hình ảnh mô tả
-
-
 
 ## 🚀 Hướng Dẫn Cài Đặt & Triển Khai (Deployment)
 
@@ -65,5 +62,8 @@ Các tệp tin tĩnh sẽ được tạo trong thư mục `dist/`. Bạn có th�
 
 ---
 
+## 📝 Giấy Phép
+Dự án được phát triển cho mục đích giáo dục và tham gia cuộc thi Sáng tạo.
 
-
+---
+*Phát triển bởi Đội ngũ NeuroLearn AI 🚀*

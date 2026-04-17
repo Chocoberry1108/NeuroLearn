@@ -45,6 +45,10 @@ export interface User {
   dailyGoal: number;
   streakStatus: ('active' | 'completed' | 'missed' | 'frozen')[]; // Last 7 days status
   authDetails?: AuthUser;
+  settings?: {
+    isDarkMode: boolean;
+    language: Language;
+  };
 }
 
 export interface AuthUser {

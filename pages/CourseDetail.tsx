@@ -467,14 +467,10 @@ const CourseDetail: React.FC<CourseDetailProps> = ({
                 {course.isCreatedByUser && (
                     <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-100 dark:border-gray-700 shadow-sm">
                         <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">CÀI ĐẶT KHÓA HỌC</h3>
-                        <div className="grid grid-cols-2 gap-3 mb-3">
-                            <button onClick={() => onCourseUpdate?.({ ...course, status: course.status === 'published' ? 'draft' : 'published' })} className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${course.status === 'published' ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700' : 'border-gray-100 dark:border-gray-700 text-gray-500'}`}>
-                                {course.status === 'published' ? <CheckCircle size={20} className="mb-1" /> : <FileEdit size={20} className="mb-1" />}
-                                <span className="text-[10px] font-bold">{course.status === 'published' ? 'Đã xuất bản' : 'Bản nháp'}</span>
-                            </button>
-                            <button onClick={() => onCourseUpdate?.({ ...course, visibility: course.visibility === 'public' ? 'private' : 'public' })} className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${course.visibility === 'public' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700' : 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700'}`}>
-                                {course.visibility === 'public' ? <Globe size={20} className="mb-1" /> : <Lock size={20} className="mb-1" />}
-                                <span className="text-[10px] font-bold">{course.visibility === 'public' ? 'Công khai' : 'Riêng tư'}</span>
+                        <div className="grid grid-cols-1 mb-3">
+                            <button onClick={() => onEditCourse?.(course)} className="flex flex-col items-center justify-center py-4 rounded-xl border-2 transition-all border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400">
+                                <FileEdit size={24} className="mb-2" />
+                                <span className="text-sm font-bold">Chỉnh sửa khóa học</span>
                             </button>
                         </div>
                     </div>

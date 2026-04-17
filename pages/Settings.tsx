@@ -32,7 +32,7 @@ const Settings: React.FC<SettingsProps> = ({
   const [profileForm, setProfileForm] = useState({
       name: user.name,
       avatar: user.avatar,
-      email: 'user@example.com' // Mock email
+      email: user.authDetails?.email || 'user@example.com'
   });
   const [profileSaved, setProfileSaved] = useState(false);
 

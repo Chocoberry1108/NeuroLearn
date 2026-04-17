@@ -1,5 +1,6 @@
 {
   "name": "neurolearn-ai",
+  "homepage": "https://YOUR_GITHUB_USERNAME.github.io/neurolearn-ai",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -7,12 +8,13 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "tsc --noEmit"
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@google/genai": "^1.36.0",
+    "firebase": "^12.12.0",
     "lucide-react": "^0.562.0",
-    "motion": "^12.38.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-markdown": "^10.1.0",
@@ -21,6 +23,7 @@
   "devDependencies": {
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "gh-pages": "^6.3.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

@@ -37,11 +37,11 @@ const Sidebar: React.FC<SidebarProps> = ({
     <div className="hidden md:flex flex-col w-64 h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-colors duration-200">
       {/* Logo Area */}
       <div className="p-6 flex items-center space-x-3">
-        <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200 dark:shadow-none overflow-hidden">
+        <div className="w-10 h-10 bg-white dark:bg-gray-800 rounded-xl flex items-center justify-center shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden p-0.5">
             <img 
-              src="https://cdn-icons-png.flaticon.com/512/2641/2641333.png" 
+              src="https://i.pinimg.com/736x/f2/03/6a/f2036ae5b72116080e855da859e7d77f.jpg" 
               alt="Logo" 
-              className="w-7 h-7 object-contain brightness-0 invert"
+              className="w-full h-full object-cover rounded-lg"
               referrerPolicy="no-referrer"
             />
         </div>

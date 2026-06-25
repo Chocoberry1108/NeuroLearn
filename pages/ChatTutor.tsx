@@ -1,5 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User as UserIcon, Loader2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import { chatWithTutor } from '../services/geminiService';
 import { Language } from '../types';
 
@@ -86,7 +89,13 @@ const ChatTutor: React.FC<ChatTutorProps> = ({ t, language }) => {
                     : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 border border-gray-100 dark:border-gray-700 rounded-bl-none'
                 }`}
                 >
-                {msg.text}
+                {msg.role === 'user' ? (
+                  msg.text
+                ) : (
+                  <div className="markdown-body prose prose-sm dark:prose-invert max-w-none">
+                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{msg.text}</ReactMarkdown>
+                  </div>
+                )}
                 </div>
             </div>
             ))}

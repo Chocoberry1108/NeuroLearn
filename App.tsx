@@ -19,7 +19,7 @@ import { doc, onSnapshot, setDoc, collection, updateDoc, deleteDoc } from 'fireb
 // Mock Data
 const TRANSLATIONS = {
   vi: {
-    nav: { home: 'Trang chủ', search: 'Khám phá', create: 'Tạo mới', chat: 'Gia sư', settings: 'Cài đặt' },
+    nav: { home: 'Trang chủ', search: 'Khám phá', create: 'Tạo mới', chat: 'Chat', settings: 'Cài đặt' },
     home: { hello: 'Chào', ready: 'Sẵn sàng học chưa?', goal: 'Mục tiêu tuần', continue: 'Tiếp tục học', seeAll: 'Xem hết', recommended: 'Gợi ý' },
     search: { title: 'Tìm kiếm', placeholder: 'Tìm khóa học, chủ đề...', all: 'Tất cả', results: 'kết quả', noResults: 'Không tìm thấy kết quả', tryAdjusting: 'Hãy thử thay đổi từ khóa hoặc bộ lọc', clearFilters: 'Xóa bộ lọc' },
     generator: { 
@@ -90,7 +90,7 @@ const TRANSLATIONS = {
     common: { edit: 'Chỉnh sửa', save: 'Lưu lại', cancel: 'Hủy bỏ', editing: 'Đang soạn thảo', markdownSupport: 'Hỗ trợ Markdown' }
   },
   en: {
-    nav: { home: 'Home', search: 'Search', create: 'Create', chat: 'Tutor', settings: 'Settings' },
+    nav: { home: 'Home', search: 'Search', create: 'Create', chat: 'Chat', settings: 'Settings' },
     home: { hello: 'Hello', ready: 'Ready to learn?', goal: 'Weekly Goal', continue: 'Continue Learning', seeAll: 'See all', recommended: 'Recommended' },
     search: { title: 'Search', placeholder: 'Search courses, topics...', all: 'All', results: 'results', noResults: 'No results found', tryAdjusting: 'Try adjusting your keywords or filters', clearFilters: 'Clear filters' },
     generator: { 
@@ -419,7 +419,7 @@ const App: React.FC = () => {
                       
                       const totalLessons = updatedModules.reduce((acc, m) => acc + m.lessons.length, 0);
                       const completedLessons = updatedModules.reduce((acc, m) => acc + m.lessons.filter(l => l.isCompleted).length, 0);
-                      const progress = Math.round((completedLessons / totalLessons) * 100);
+                      const progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
                       const updatedCourse = { ...courseToUpdate, modules: updatedModules, progress };
                       await setDoc(courseRef, updatedCourse);

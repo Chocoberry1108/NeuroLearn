@@ -88,16 +88,18 @@ const CourseGenerator: React.FC<CourseGeneratorProps> = ({ onCourseGenerated, t,
           fileData || undefined
       );
       
+      const fallbackTitle = partialCourse.title || topic || "Uploaded Course";
+      
       const newCourse: Course = {
         id: `gen-${Date.now()}`,
-        title: partialCourse.title || topic || "Uploaded Course",
+        title: fallbackTitle,
         description: partialCourse.description || "Khóa học tạo bởi AI",
-        thumbnail: partialCourse.thumbnail || "",
+        thumbnail: partialCourse.thumbnail || `https://picsum.photos/seed/${fallbackTitle.replace(/\s/g, '')}/400/300`,
         author: "Neuro AI",
         category: partialCourse.category || "Tổng quát",
         rating: 5.0,
         students: 0,
-        modules: partialCourse.modules || [],
+        modules: partialCourse.modules && partialCourse.modules.length > 0 ? partialCourse.modules : [{ id: `m-${Date.now()}`, title: 'Chương 1', lessons: [] }],
         progress: 0,
         isGenerated: true,
         status: 'draft',

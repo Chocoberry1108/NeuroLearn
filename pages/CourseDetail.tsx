@@ -2,8 +2,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Course, Module, Lesson, Language, VerificationResult } from '../types';
 import { ChevronLeft, PlayCircle, CheckCircle, Lock, Clock, BookOpen, ChevronDown, ChevronUp, ArrowLeft, Users, Star, Sparkles, Loader2, Link as LinkIcon, Youtube, ShieldCheck, AlertTriangle, Check, Camera, Edit2, Save, X, Globe, FileEdit, LayoutTemplate, ArrowRight, Image as ImageIcon, Bot } from 'lucide-react';
-import { generateLessonContent, verifyLessonContent } from '../services/geminiService';
+import { generateLessonContent, verifyLessonContent, extractYouTubeId } from '../services/geminiService';
 import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import CourseCard from '../components/CourseCard';
 import RichTextEditor from '../components/RichTextEditor';
 
@@ -161,24 +163,25 @@ const CourseDetail: React.FC<CourseDetailProps> = ({
                 <div dangerouslySetInnerHTML={{ __html: sanitized }} />
             ) : (
                 <ReactMarkdown
+                    remarkPlugins={[remarkMath]}
+                    rehypePlugins={[rehypeKatex]}
                     components={{
                         img: ({node, ...props}) => (
-                            <div className="my-8 relative group">
+                            <span className="flex flex-col items-center justify-center my-8 md:my-10 relative group w-full text-center">
                                 <img 
                                     {...props} 
-                                    className="w-full rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 mx-auto object-cover max-h-[500px] bg-gray-50 dark:bg-gray-800" 
+                                    className="w-[90%] md:w-[80%] rounded-xl shadow-md border border-gray-200 dark:border-gray-700 mx-auto object-contain max-h-[500px] bg-white dark:bg-gray-800" 
                                     onError={(e) => {
                                         // Hide broken images automatically
                                         (e.currentTarget.parentElement as HTMLElement).style.display = 'none';
                                     }}
                                 />
                                 {props.alt && (
-                                    <p className="text-center text-xs text-gray-500 mt-2 italic flex items-center justify-center">
-                                        <ImageIcon size={12} className="mr-1" />
+                                    <span className="block text-center text-sm text-gray-600 dark:text-gray-400 mt-3 font-medium px-4">
                                         {props.alt}
-                                    </p>
+                                    </span>
                                 )}
-                            </div>
+                            </span>
                         ),
                         p: ({node, ...props}) => <p className="mb-4" {...props} />,
                         h1: ({node, ...props}) => <h1 className="text-2xl font-bold mt-8 mb-4" {...props} />,
@@ -293,7 +296,10 @@ const CourseDetail: React.FC<CourseDetailProps> = ({
                                     Video bài giảng liên quan
                                 </p>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {lessonVideos.map((video, idx) => (
+                                    {lessonVideos
+                                        .map(v => ({ ...v, videoId: extractYouTubeId(v.videoId) }))
+                                        .filter(v => v.videoId)
+                                        .map((video, idx) => (
                                         <div key={idx} className="rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm">
                                             <iframe
                                                 width="100%"
@@ -424,7 +430,16 @@ const CourseDetail: React.FC<CourseDetailProps> = ({
       <div className="md:flex md:h-screen">
         <div className="md:w-1/3 md:overflow-y-auto md:border-r border-gray-200 dark:border-gray-700">
             <div className="relative h-64 md:h-72 bg-gray-900 group">
-                <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover opacity-60" />
+                <img 
+                    src={course.thumbnail} 
+                    alt={course.title} 
+                    className="w-full h-full object-cover opacity-60" 
+                    onError={(e) => {
+                        if (!e.currentTarget.src.includes('picsum.photos')) {
+                            e.currentTarget.src = `https://picsum.photos/seed/${encodeURIComponent(course.title)}/400/300`;
+                        }
+                    }}
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
                 <button onClick={onBack} className="absolute top-4 left-4 p-2 bg-black/30 backdrop-blur-md rounded-full text-white hover:bg-black/50 z-10"><ArrowLeft size={20} /></button>
                 <button onClick={() => fileInputRef.current?.click()} className="absolute top-4 right-4 p-2 bg-black/30 backdrop-blur-md rounded-full text-white z-20"><Camera size={20} /></button>

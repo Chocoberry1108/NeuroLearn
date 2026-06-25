@@ -32,6 +32,11 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, onClick }) => {
           src={course.thumbnail} 
           alt={course.title} 
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          onError={(e) => {
+            if (!e.currentTarget.src.includes('picsum.photos')) {
+              e.currentTarget.src = `https://picsum.photos/seed/${encodeURIComponent(course.title)}/400/300`;
+            }
+          }}
         />
         
         {/* Share Button */}

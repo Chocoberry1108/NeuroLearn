@@ -20,7 +20,7 @@ const COURSE_SCHEMA = {
     title: { type: Type.STRING },
     description: { type: Type.STRING, description: "A concise 1-2 sentence overview of the course." },
     category: { type: Type.STRING },
-    thumbnailUrl: { type: Type.STRING, description: "A highly relevant image URL from a website, representing the course topic. USE GOOGLE SEARCH to find a REAL, PUBLICly accessible image URL ending in .jpg, .png. MUST NOT be a base64 or data: URI. Keep the URL length under 300 characters." },
+    thumbnailUrl: { type: Type.STRING, description: "Leave empty or provide a relevant keyword for the cover image." },
     modules: {
       type: Type.ARRAY,
       items: {
@@ -101,47 +101,133 @@ const VERIFICATION_SCHEMA = {
 const parseJsonSafely = (text: string) => {
     if (!text) return {};
     let cleanText = text.trim();
-    if (cleanText.startsWith('```')) {
-        cleanText = cleanText.replace(/^```(?:json)?\n?/mi, '');
-        cleanText = cleanText.replace(/\n?```$/m, '');
-    }
+
+    // 1. Try direct parsing
     try {
-        return JSON.parse(cleanText.trim());
-    } catch (e: any) {
-        console.warn("JSON parse failed, attempting manual recovery.", e.message);
-        // Sometimes the model truncates the JSON. Let's try appending common closing characters.
-        const suffixes = ['"}', '"]}', '"}]}', '"]}]}', '}', ']}', ']}}'];
-        for (const suffix of suffixes) {
-            try {
-                return JSON.parse(cleanText.trim() + suffix);
-            } catch (err) {}
+        return JSON.parse(cleanText);
+    } catch (e) {}
+
+    // 2. Extract markdown JSON block if present
+    const markdownMatch = cleanText.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+    if (markdownMatch && markdownMatch[1]) {
+        const innerText = markdownMatch[1].trim();
+        try {
+            return JSON.parse(innerText);
+        } catch (e) {
+            cleanText = innerText; // Continue trying other methods on the inner text
         }
-        
-        // Find the last closing brace or bracket to attempt manual recovery of truncated JSON
-        const lastBrace = cleanText.lastIndexOf('}');
-        const lastBracket = cleanText.lastIndexOf(']');
-        const cutOff = Math.max(lastBrace, lastBracket);
-        if (cutOff !== -1) {
-             try {
-                 // Try parsing a truncated portion
-                 return JSON.parse(cleanText.substring(0, cutOff + 1));
-             } catch (e2) {
-                 // ignore
-             }
-             
-             // If the cutOff was itself inside a corrupted string, we can try to cut before the last quote
-             const lastQuote = cleanText.substring(0, cutOff).lastIndexOf('"');
-             if (lastQuote !== -1) {
-                 try {
-                     return JSON.parse(cleanText.substring(0, lastQuote) + '""}');
-                 } catch (e3) {}
-             }
-        }
-        
-        // If all recovery fails, return empty to prevent hard crashing
-        console.error("Failed to recover JSON", text.substring(0, 100) + '...');
-        return {};
     }
+
+    // 3. Extract portion between first '{' or '[' and last '}' or ']'
+    const firstBrace = cleanText.indexOf('{');
+    const lastBrace = cleanText.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        const potentialJson = cleanText.substring(firstBrace, lastBrace + 1);
+        try {
+            return JSON.parse(potentialJson);
+        } catch (e) {
+            cleanText = potentialJson; // Continue trying to recover this portion
+        }
+    }
+
+    // 4. Manual recovery of truncated JSON
+    console.warn("JSON parse failed, attempting manual recovery for:", cleanText.substring(0, 100) + '...');
+    
+    let openBraces = 0;
+    let openBrackets = 0;
+    let inString = false;
+    let escaped = false;
+    const cleanChars: string[] = [];
+
+    for (let i = 0; i < cleanText.length; i++) {
+        const char = cleanText[i];
+        if (escaped) {
+            cleanChars.push(char);
+            escaped = false;
+            continue;
+        }
+        if (char === '\\') {
+            cleanChars.push(char);
+            escaped = true;
+            continue;
+        }
+        if (char === '"') {
+            inString = !inString;
+            cleanChars.push(char);
+            continue;
+        }
+        if (inString) {
+            cleanChars.push(char);
+            continue;
+        }
+        if (char === '{') {
+            openBraces++;
+        } else if (char === '}') {
+            openBraces--;
+        } else if (char === '[') {
+            openBrackets++;
+        } else if (char === ']') {
+            openBrackets--;
+        }
+        cleanChars.push(char);
+    }
+
+    let reconstructed = cleanChars.join('');
+
+    // If we are left in a string, close the string
+    if (inString) {
+        reconstructed += '"';
+    }
+
+    // Trace open brackets/braces to close them in the correct nesting order
+    const openStack: ('object' | 'array')[] = [];
+    inString = false;
+    escaped = false;
+    for (let i = 0; i < reconstructed.length; i++) {
+        const char = reconstructed[i];
+        if (escaped) { escaped = false; continue; }
+        if (char === '\\') { escaped = true; continue; }
+        if (char === '"') { inString = !inString; continue; }
+        if (inString) continue;
+        if (char === '{') openStack.push('object');
+        else if (char === '[') openStack.push('array');
+        else if (char === '}') { if (openStack[openStack.length - 1] === 'object') openStack.pop(); }
+        else if (char === ']') { if (openStack[openStack.length - 1] === 'array') openStack.pop(); }
+    }
+
+    let tail = '';
+    for (let i = openStack.length - 1; i >= 0; i--) {
+        if (openStack[i] === 'object') {
+            tail += '}';
+        } else if (openStack[i] === 'array') {
+            tail += ']';
+        }
+    }
+
+    try {
+        return JSON.parse(reconstructed + tail);
+    } catch (e) {}
+
+    // Fallback: Try a simpler suffix-based approach
+    const suffixes = ['"}', '"]}', '"}]}', '"]}]}', '}', ']}', ']}}'];
+    for (const suffix of suffixes) {
+        try {
+            return JSON.parse(cleanText.trim() + suffix);
+        } catch (err) {}
+    }
+
+    // Last resort: find last occurrence of a complete brace or bracket and parse
+    const lastCurly = cleanText.lastIndexOf('}');
+    const lastSquare = cleanText.lastIndexOf(']');
+    const cut = Math.max(lastCurly, lastSquare);
+    if (cut !== -1) {
+        try {
+            return JSON.parse(cleanText.substring(0, cut + 1));
+        } catch (e) {}
+    }
+
+    console.error("All JSON recovery failed.");
+    return {};
 };
 
 export const generateCourseStructure = async (
@@ -164,10 +250,15 @@ export const generateCourseStructure = async (
         parts.push({
             text: `Analyze the attached file content and create a comprehensive course structure based on it.
             The content MUST be in ${langPrompt} language.
-            Include 3 modules, each with 2 lessons.
-            Provide a concise description for each lesson. Do NOT generate detailed content yet.
-            Rely ONLY on the provided file content and your reasoning. Extract any topics or concepts present.
-            For thumbnailUrl, DO NOT attempt to find real URLs, output empty string or omit it. MUST NOT BE a base64 or data URI.`
+            Include EXACTLY 3 modules, each with EXACTLY 2 lessons.
+            Provide a concise, 1-sentence description for each lesson. Do NOT generate detailed content yet.
+            
+            CRITICAL DESIGN & WRITING RULES:
+            1. Write in a natural, engaging, and professional educational tone.
+            2. ABSOLUTELY AVOID repetitive phrasing, looping text, or recycling the same words or keywords.
+            3. Each module and lesson MUST have a unique, distinct, and descriptive title.
+            4. Rely ONLY on the provided file content and your reasoning. Extract any topics or concepts present.
+            5. For thumbnailUrl, DO NOT attempt to find real URLs, output an empty string or omit it.`
         });
     } else {
         parts.push({
@@ -175,7 +266,12 @@ export const generateCourseStructure = async (
             The content MUST be in ${langPrompt} language.
             Include EXACTLY 3 modules, each with EXACTLY 2 lessons.
             Provide a concise 1-sentence description for each lesson. Do NOT generate detailed content yet.
-            USE GOOGLE SEARCH to find a REAL, PUBLICly accessible image URL related to "${topic}" to use as the course \`thumbnailUrl\`. DO NOT hallucinate the URL. MUST NOT BE a base64 or data URI.`
+            
+            CRITICAL DESIGN & WRITING RULES:
+            1. Write in a natural, engaging, and professional educational tone.
+            2. ABSOLUTELY AVOID repetitive phrasing, looping text, or recycling the same words or keywords.
+            3. Each module and lesson MUST have a unique, distinct, and descriptive title.
+            4. USE GOOGLE SEARCH to find a REAL, PUBLICly accessible image URL related to "${topic}" to use as the course \`thumbnailUrl\`. DO NOT hallucinate the URL. MUST NOT BE a base64 or data URI.`
         });
     }
 
@@ -189,8 +285,8 @@ export const generateCourseStructure = async (
     }
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: parts.length === 1 ? parts[0].text : { parts },
+      model: 'gemini-3.5-flash',
+      contents: parts,
       config: config,
     });
 
@@ -238,7 +334,7 @@ export const generateLessonContent = async (courseTitle: string, lessonTitle: st
   const langPrompt = language === 'vi' ? 'Vietnamese' : 'English';
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-3.5-flash',
       contents: `You are an expert tutor writing content for a student in ${langPrompt}.
       
       Topic: Lesson "${lessonTitle}" of course "${courseTitle}".
@@ -251,7 +347,12 @@ export const generateLessonContent = async (courseTitle: string, lessonTitle: st
       5. CHÈN HÌNH ẢNH MINH HỌA VÀO GIỮA BÀI HỌC (EMBED these images DIRECTLY into the Markdown content using syntax \`![Alt Text](URL)\`). Place each image strategically between paragraphs or after headings to clearly illustrate the concept being discussed, so it acts as an illustrative break.
       6. USE GOOGLE SEARCH with query "site:youtube.com ${lessonTitle}" to find 2 REAL, existing YouTube videos. Their URLs will be automatically extracted from your search references, so just ensure you search for them.
       
-      Make the content highly engaging, well-researched, and visually appealing by interleaving text and images.`,
+      Make the content highly engaging, well-researched, and visually appealing by interleaving text and images.
+      
+      CRITICAL WRITING REQUIREMENTS:
+      - Write in a highly natural, fluent, and professional educational tone.
+      - ABSOLUTELY AVOID any repetitive phrasing, loop sentences, or copying/pasting of redundant words.
+      - Every paragraph and section must proceed logically and bring new value. No looping text or word repetition allowed.`,
       config: {
         tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
@@ -336,41 +437,68 @@ export const generateLessonFromFile = async (
   const langPrompt = language === 'vi' ? 'Vietnamese' : 'English';
   try {
      const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: {
-        parts: [
-            {
-                inlineData: {
-                    mimeType: fileData.mimeType,
-                    data: fileData.data
-                }
-            },
-            {
-                text: `You are an expert educational content creator. 
-                Task: Create a detailed lesson content for the lesson titled "${lessonTitle}" based purely on the attached document and your logical reasoning.
-                Language: ${langPrompt}.
-                Format: Markdown.
-                Instructions:
-                - Extract key information relevant to the lesson title from the document.
-                - Structure it with clear headings, bullet points, and paragraphs.
-                - Ensure it is comprehensive, easy to learn, and well-formatted.
-                - Do NOT just summarize; teach the material found in the document.
-                - Analyze any images, charts, or graphs present in the document and describe their crucial points in text where relevant.
-                - DO NOT attempt to search for external YouTube videos or Images (leave those fields empty in JSON), just focus on extracting the best curriculum from the file.`
-            }
-        ]
-      },
+      model: 'gemini-3.5-flash',
+      contents: [
+          {
+              inlineData: {
+                  mimeType: fileData.mimeType,
+                  data: fileData.data
+              }
+          },
+          {
+              text: `You are an expert educational content creator. 
+              Task: Create detailed, comprehensive, and engaging lesson content for the lesson titled "${lessonTitle}" based purely on the attached document and your logical reasoning.
+              Language: ${langPrompt}.
+              Format: Markdown.
+              
+              Instructions:
+              - Extract key information relevant to the lesson title from the document.
+              - Structure it beautifully with clear headings, bullet points, and paragraphs using Markdown.
+              - Ensure it is comprehensive, easy to learn, and well-formatted.
+              - Do NOT just summarize; teach the material found in the document in-depth.
+              - Analyze any images, charts, or graphs present in the document and describe their crucial points in text where relevant.
+              - DO NOT attempt to search for external YouTube videos or Images (leave those fields empty in JSON).
+              
+              CRITICAL WRITING REQUIREMENTS:
+              1. Write in a highly natural, fluent, and professional educational tone.
+              2. ABSOLUTELY AVOID any repetitive phrasing, loop sentences, or copying/pasting of redundant words.
+              3. Every single paragraph and section must bring new, distinct value and proceed logically. No looping text or word repetition allowed.`
+          }
+      ],
       config: {
         responseMimeType: "application/json",
         responseSchema: FILE_LESSON_SCHEMA,
       }
     });
-    const json = parseJsonSafely(response.text || "{}");
+
+    const responseText = response.text || "";
+    const json = parseJsonSafely(responseText);
     
-    let content = (json.markdownContent || "").replace(/\\n/g, '\n');
-    const images = json.images || [];
+    let content = "";
+    let images = [];
+
+    if (json && json.markdownContent) {
+        content = json.markdownContent.replace(/\\n/g, '\n');
+        images = json.images || [];
+    } else {
+        // Fallback: If JSON parsing failed, try extracting from potential markdown blocks in responseText
+        const markdownMatch = responseText.match(/```(?:json|markdown)?\s*([\s\S]*?)\s*```/i);
+        if (markdownMatch && markdownMatch[1]) {
+            try {
+                const parsed = JSON.parse(markdownMatch[1].trim());
+                content = (parsed.markdownContent || "").replace(/\\n/g, '\n');
+                images = parsed.images || [];
+            } catch (e) {
+                // If it's not JSON inside the codeblock, use the block as direct Markdown content
+                content = markdownMatch[1].trim();
+            }
+        } else {
+            // Just use the raw text as content
+            content = responseText;
+        }
+    }
     
-    if (images.length > 0) {
+    if (images.length > 0 && content) {
       const contentParts = content.split('\n\n');
       let imgIndex = 0;
       let newContentParts = [];
@@ -432,7 +560,7 @@ export const verifyLessonContent = async (content: string, language: Language): 
   const langPrompt = language === 'vi' ? 'Vietnamese' : 'English';
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-3.5-flash',
       contents: `Verify educational content in ${langPrompt}:\n${content.substring(0, 1000)}`,
       config: {
         tools: [{ googleSearch: {} }],
@@ -479,7 +607,7 @@ export const chatWithTutor = async (history: { role: 'user' | 'model', text: str
       }
 
       const chat = ai.chats.create({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-3.5-flash',
         history: validHistory.map(h => ({ role: h.role, parts: [{ text: h.text }] })),
         config: { systemInstruction: `You are Neuro AI tutor in ${langInstruction}.` }
       });

@@ -8,6 +8,7 @@ import CourseDetail from './pages/CourseDetail';
 import ChatTutor from './pages/ChatTutor';
 import Settings from './pages/Settings';
 import Search from './pages/Search';
+import UserProfile from './pages/UserProfile';
 import Auth from './pages/Auth';
 import NotificationPanel from './components/NotificationPanel';
 import { Course, Tab, User, Language, AppNotification, AuthUser } from './types';
@@ -21,7 +22,7 @@ const TRANSLATIONS = {
   vi: {
     nav: { home: 'Trang chủ', search: 'Khám phá', create: 'Tạo mới', chat: 'Chat', settings: 'Cài đặt' },
     home: { hello: 'Chào', ready: 'Sẵn sàng học chưa?', goal: 'Mục tiêu tuần', continue: 'Tiếp tục học', seeAll: 'Xem hết', recommended: 'Gợi ý' },
-    search: { title: 'Tìm kiếm', placeholder: 'Tìm khóa học, chủ đề...', all: 'Tất cả', results: 'kết quả', noResults: 'Không tìm thấy kết quả', tryAdjusting: 'Hãy thử thay đổi từ khóa hoặc bộ lọc', clearFilters: 'Xóa bộ lọc' },
+    search: { title: 'Tìm kiếm', placeholder: 'Tìm khóa học, chủ đề, người đăng...', all: 'Tất cả', results: 'kết quả', noResults: 'Không tìm thấy kết quả', tryAdjusting: 'Hãy thử thay đổi từ khóa hoặc bộ lọc', clearFilters: 'Xóa bộ lọc' },
     generator: { 
       title: 'Tạo khóa học', 
       tabCreate: 'Tạo mới', 
@@ -92,7 +93,7 @@ const TRANSLATIONS = {
   en: {
     nav: { home: 'Home', search: 'Search', create: 'Create', chat: 'Chat', settings: 'Settings' },
     home: { hello: 'Hello', ready: 'Ready to learn?', goal: 'Weekly Goal', continue: 'Continue Learning', seeAll: 'See all', recommended: 'Recommended' },
-    search: { title: 'Search', placeholder: 'Search courses, topics...', all: 'All', results: 'results', noResults: 'No results found', tryAdjusting: 'Try adjusting your keywords or filters', clearFilters: 'Clear filters' },
+    search: { title: 'Search', placeholder: 'Search courses, topics, authors...', all: 'All', results: 'results', noResults: 'No results found', tryAdjusting: 'Try adjusting your keywords or filters', clearFilters: 'Clear filters' },
     generator: { 
       title: 'Course Creator', 
       tabCreate: 'Create New', 
@@ -169,6 +170,7 @@ const App: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [publicCourses, setPublicCourses] = useState<Course[]>([]);
   const [activeCourse, setActiveCourse] = useState<Course | null>(null);
+  const [activeProfileUser, setActiveProfileUser] = useState<any | null>(null);
   const [user, setUser] = useState<User>(config.user as User);
   const [courseToEdit, setCourseToEdit] = useState<Course | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(config.settings.isDarkMode);
@@ -373,8 +375,8 @@ const App: React.FC = () => {
 
   return (
     <div className={`h-screen w-full bg-gray-50 dark:bg-gray-900 flex transition-colors duration-200 overflow-hidden ${isDarkMode ? 'dark' : ''}`}>
-      {/* Ẩn Sidebar khi đang xem chi tiết khóa học */}
-      {!activeCourse && (
+      {/* Ẩn Sidebar khi đang xem chi tiết khóa học hoặc xem hồ sơ cá nhân */}
+      {!activeCourse && !activeProfileUser && (
         <Sidebar 
           currentTab={currentTab} 
           onTabChange={setCurrentTab} 
@@ -385,6 +387,7 @@ const App: React.FC = () => {
           language={language} 
           onToggleLanguage={toggleLanguage} 
           onLogout={handleLogout} 
+          onUserClick={setActiveProfileUser}
         />
       )}
       
@@ -433,12 +436,21 @@ const App: React.FC = () => {
                     }
                     addNotification({ title: 'Bài học hoàn tất!', message: 'Chúc mừng bạn đã hoàn thành một bài học mới. +10 XP!', type: 'achievement' });
                 }}
+                onUserClick={setActiveProfileUser}
                 commonT={t.common}
+              />
+            ) : activeProfileUser ? (
+              <UserProfile 
+                profileUser={activeProfileUser} 
+                courses={allCourses} 
+                onBack={() => setActiveProfileUser(null)} 
+                onCourseClick={setActiveCourse} 
+                language={language} 
               />
             ) : (
                 <>
                 {currentTab === 'home' && <Home user={user} courses={allCourses} onCourseClick={setActiveCourse} t={t.home} language={language} onOpenNotif={() => setIsNotifOpen(true)} unreadCount={notifications.filter(n => !n.read).length} />}
-                {currentTab === 'search' && <Search courses={allCourses} onCourseClick={setActiveCourse} t={t.search} language={language} />}
+                {currentTab === 'search' && <Search courses={allCourses} onCourseClick={setActiveCourse} onUserClick={setActiveProfileUser} t={t.search} language={language} />}
                 {currentTab === 'create' && <CourseGenerator onCourseGenerated={handleCourseGenerated} t={t.generator} language={language} courses={allCourses} onCourseClick={setActiveCourse} initialData={courseToEdit} onCancel={() => setCourseToEdit(null)} onDeleteCourse={async (id) => {
                   if (!auth.currentUser) return;
                   await deleteDoc(doc(db, 'users', auth.currentUser.uid, 'courses', id));
@@ -467,8 +479,8 @@ const App: React.FC = () => {
         language={language}
       />
       
-      {/* Ẩn BottomNav khi đang xem chi tiết khóa học */}
-      {!activeCourse && <BottomNav currentTab={currentTab} onTabChange={setCurrentTab} labels={t.nav} />}
+      {/* Ẩn BottomNav khi đang xem chi tiết khóa học hoặc xem hồ sơ cá nhân */}
+      {!activeCourse && !activeProfileUser && <BottomNav currentTab={currentTab} onTabChange={setCurrentTab} labels={t.nav} />}
     </div>
   );
 };

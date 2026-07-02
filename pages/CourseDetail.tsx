@@ -8,6 +8,7 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import CourseCard from '../components/CourseCard';
 import RichTextEditor from '../components/RichTextEditor';
+import { YouTubePlayer } from '../components/YouTubePlayer';
 
 interface CourseDetailProps {
   course: Course;
@@ -18,6 +19,7 @@ interface CourseDetailProps {
   onLessonComplete?: (courseId: string, moduleId: string, lessonId: string) => void;
   onCourseUpdate?: (course: Course) => void;
   onEditCourse?: (course: Course) => void;
+  onUserClick?: (user: any) => void;
   commonT?: any;
 }
 
@@ -30,6 +32,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({
     onLessonComplete,
     onCourseUpdate,
     onEditCourse,
+    onUserClick,
     commonT = { edit: 'Edit', save: 'Save', cancel: 'Cancel', editing: 'Editing', markdownSupport: 'Markdown' }
 }) => {
   const [activeModuleId, setActiveModuleId] = useState<string | null>(course.modules[0]?.id || null);
@@ -150,6 +153,22 @@ const CourseDetail: React.FC<CourseDetailProps> = ({
           lessons: mod.lessons.map(les => les.id !== lessonId ? les : { ...les, content, sources, videos, images })
       });
       onCourseUpdate({ ...course, modules: newModules });
+  };
+
+  const handleUpdateLessonVideo = (videoIndex: number, newVideoId: string) => {
+      if (!selectedLesson || !selectedModuleId) return;
+      const updatedVideos = lessonVideos.map((v, idx) => 
+          idx === videoIndex ? { ...v, videoId: newVideoId } : v
+      );
+      setLessonVideos(updatedVideos);
+      updateCourseContent(
+          selectedModuleId, 
+          selectedLesson.id, 
+          lessonContent, 
+          lessonSources, 
+          updatedVideos, 
+          lessonImages
+      );
   };
 
   const renderContent = (content: string) => {
@@ -297,24 +316,16 @@ const CourseDetail: React.FC<CourseDetailProps> = ({
                                 </p>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     {lessonVideos
-                                        .map(v => ({ ...v, videoId: extractYouTubeId(v.videoId) }))
-                                        .filter(v => v.videoId)
-                                        .map((video, idx) => (
-                                        <div key={idx} className="rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm">
-                                            <iframe
-                                                width="100%"
-                                                height="200"
-                                                src={`https://www.youtube.com/embed/${video.videoId}`}
+                                        .map((v, idx) => ({ ...v, extractedId: extractYouTubeId(v.videoId), idx }))
+                                        .filter(v => v.extractedId)
+                                        .map((video) => (
+                                            <YouTubePlayer 
+                                                key={video.idx}
+                                                videoId={video.extractedId!}
                                                 title={video.title}
-                                                frameBorder="0"
-                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                                allowFullScreen
-                                            ></iframe>
-                                            <div className="p-3 bg-gray-50 dark:bg-gray-800/50">
-                                                <p className="text-xs font-bold text-gray-800 dark:text-gray-200 line-clamp-1">{video.title}</p>
-                                            </div>
-                                        </div>
-                                    ))}
+                                                onUpdateVideoId={(newId) => handleUpdateLessonVideo(video.idx, newId)}
+                                            />
+                                        ))}
                                 </div>
                             </div>
                         )}
@@ -464,13 +475,23 @@ const CourseDetail: React.FC<CourseDetailProps> = ({
 
             <div className="px-6 py-6 space-y-6">
                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                    <div 
+                        onClick={() => onUserClick?.({
+                          name: course.author,
+                          avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(course.author)}`,
+                          isInstructor: true,
+                          streak: 15,
+                          points: 2450
+                        })}
+                        className="flex items-center space-x-3 cursor-pointer group hover:opacity-80 transition-opacity"
+                        title={language === 'vi' ? 'Xem trang cá nhân' : 'View Profile'}
+                    >
+                        <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden group-hover:ring-2 group-hover:ring-indigo-500 transition-all">
                             <img src={`https://ui-avatars.com/api/?name=${course.author}&background=random`} alt={course.author} />
                         </div>
                         <div>
-                            <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase font-bold">Giảng viên</p>
-                            <p className="text-sm font-bold text-gray-800 dark:text-white">{course.author}</p>
+                            <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase font-bold">{language === 'vi' ? 'Giảng viên' : 'Instructor'}</p>
+                            <p className="text-sm font-bold text-gray-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{course.author}</p>
                         </div>
                     </div>
                     <div className="text-right">

@@ -12,6 +12,7 @@ interface SidebarProps {
   language: Language;
   onToggleLanguage: () => void;
   onLogout: () => void;
+  onUserClick?: (user: any) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
@@ -23,7 +24,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   onToggleDarkMode,
   language,
   onToggleLanguage,
-  onLogout
+  onLogout,
+  onUserClick
 }) => {
   const navItems: { id: Tab; icon: React.ElementType; label: string }[] = [
     { id: 'home', icon: Home, label: labels.home },
@@ -84,13 +86,19 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* User Profile */}
-        <div className="flex items-center p-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer group">
-            <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full border border-gray-200 dark:border-gray-600" />
-            <div className="ml-3 flex-1 min-w-0">
-                <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{user.name}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.points} XP</p>
+        <div className="flex items-center p-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-transparent hover:border-gray-150 dark:hover:border-gray-600">
+            <div 
+              onClick={() => onUserClick?.(user)} 
+              className="flex items-center flex-1 min-w-0 cursor-pointer group"
+              title={language === 'vi' ? 'Xem trang cá nhân' : 'View Profile'}
+            >
+                <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full border border-gray-200 dark:border-gray-600 group-hover:ring-2 group-hover:ring-indigo-500 transition-all" />
+                <div className="ml-3 flex-1 min-w-0">
+                    <p className="text-sm font-bold text-gray-900 dark:text-white truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{user.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.points} XP</p>
+                </div>
             </div>
-            <button onClick={onLogout} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors">
+            <button onClick={(e) => { e.stopPropagation(); onLogout(); }} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors ml-1" title={language === 'vi' ? 'Đăng xuất' : 'Logout'}>
                 <LogOut size={16} />
             </button>
         </div>

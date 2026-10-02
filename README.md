@@ -60,10 +60,4 @@ Các tệp tin tĩnh sẽ được tạo trong thư mục `dist/`. Bạn có th�
 *   **Vercel / Netlify:** Chỉ cần kết nối với kho lưu trữ GitHub.
 *   **Cloud Run / Docker:** Sử dụng Dockerfile để đóng gói và chạy trên Google Cloud.
 
----
 
-## 📝 Giấy Phép
-Dự án được phát triển cho mục đích giáo dục và tham gia cuộc thi Sáng tạo.
-
----
-*Phát triển bởi Đội ngũ NeuroLearn AI 🚀*
